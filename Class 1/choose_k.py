@@ -11,7 +11,7 @@ def main():
 
   costs = np.empty(10)
   costs[0] = None
-  for k in xrange(1, 10):
+  for k in range(1, 10):
     M, R = plot_k_means(X, k, show_plots=False)
     c = cost(X, R, M)
     costs[k] = c
@@ -23,3 +23,6 @@ def main():
 
 if __name__ == '__main__':
   main()
+
+
+"""the steep drop ends at k=3===> k=3 is the natural number of clusters"""

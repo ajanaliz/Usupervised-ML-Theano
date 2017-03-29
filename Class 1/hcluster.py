@@ -18,7 +18,7 @@ def main():
     X[600:, :] = np.random.randn(300, D) + mu3
 
     Z = linkage(X, 'ward')
-    print "Z.shape:", Z.shape
+    print("Z.shape:", Z.shape)
     # Z has the format [idx1, idx2, dist, sample_count]
     # therefore, its size will be (N-1, 4)
     plt.title("Ward")

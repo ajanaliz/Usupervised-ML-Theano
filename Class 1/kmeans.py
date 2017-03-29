@@ -9,7 +9,7 @@ def d(u, v):
 
 def cost(X, R, M):
     cost = 0
-    for k in xrange(len(M)):
+    for k in range(len(M)):
         # method 1
         # for n in xrange(len(X)):
         #     cost += R[n,k]*d(M[k], X[n])
@@ -28,15 +28,15 @@ def plot_k_means(X, K, max_iter=20, beta=1.0, show_plots=True):
     exponents = np.empty((N, K))
 
     # initialize M to random
-    for k in xrange(K):
+    for k in range(K):
         M[k] = X[np.random.choice(N)]
 
     costs = np.zeros(max_iter)
-    for i in xrange(max_iter):
+    for i in range(max_iter):
         # step 1: determine assignments / resposibilities
         # is this inefficient?
-        for k in xrange(K):
-            for n in xrange(N):
+        for k in range(K):
+            for n in range(N):
                 # R[n,k] = np.exp(-beta*d(M[k], X[n])) / np.sum( np.exp(-beta*d(M[j], X[n])) for j in xrange(K) )
                 exponents[n,k] = np.exp(-beta*d(M[k], X[n]))
 
@@ -44,7 +44,7 @@ def plot_k_means(X, K, max_iter=20, beta=1.0, show_plots=True):
         # assert(np.abs(R - R2).sum() < 10e-10)
 
         # step 2: recalculate means
-        for k in xrange(K):
+        for k in range(K):
             M[k] = R[:,k].dot(X) / R[:,k].sum()
 
         costs[i] = cost(X, R, M)
