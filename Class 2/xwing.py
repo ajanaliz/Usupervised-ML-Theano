@@ -10,17 +10,17 @@ from util import relu, error_rate, getKaggleMNIST, init_weights
 import os
 import sys
 sys.path.append(os.path.abspath('..'))
-from unsupervised_class.kmeans_mnist import purity
-from unsupervised_class.gmm import gmm
+from Class1.kmeans_mnist import purity
+from Class1.gmm import gmm
 
 class Layer(object):
-    def __init__(self, m1, m2):
+    def __init__(self, m1, m2): # m1: input size & m2: output size
         W = init_weights((m1, m2))
         bi = np.zeros(m2)
         bo = np.zeros(m1)
         self.W = theano.shared(W)
-        self.bi = theano.shared(bi)
-        self.bo = theano.shared(bo)
+        self.bi = theano.shared(bi) # input bias
+        self.bo = theano.shared(bo) # output bias
         self.params = [self.W, self.bi, self.bo]
 
     def forward(self, X):
@@ -38,6 +38,7 @@ class DeepAutoEncoder(object):
         N, D = X.shape
         n_batches = N / batch_sz
 
+        # create the hidden layers
         mi = D
         self.layers = []
         self.params = []
@@ -50,6 +51,8 @@ class DeepAutoEncoder(object):
         X_in = T.matrix('X')
         X_hat = self.forward(X_in)
 
+
+        # cross entropy cost function
         cost = -(X_in * T.log(X_hat) + (1 - X_in) * T.log(1 - X_hat)).mean()
         cost_op = theano.function(
             inputs=[X_in],
@@ -71,14 +74,14 @@ class DeepAutoEncoder(object):
         )
 
         costs = []
-        for i in xrange(epochs):
-            print "epoch:", i
+        for i in range(epochs):
+            print("epoch:", i)
             X = shuffle(X)
-            for j in xrange(n_batches):
+            for j in range(n_batches):
                 batch = X[j*batch_sz:(j*batch_sz + batch_sz)]
                 c = train_op(batch)
                 if j % 100 == 0:
-                    print "j / n_batches:", j, "/", n_batches, "cost:", c
+                    print("j / n_batches:", j, "/", n_batches, "cost:", c)
                 costs.append(c)
         if show_fig:
             plt.plot(costs)
@@ -92,9 +95,9 @@ class DeepAutoEncoder(object):
         self.map2center = theano.function(
             inputs=[X],
             outputs=Z,
-        )
+        )# returns middle layer
 
-        for i in xrange(len(self.layers)-1, -1, -1):
+        for i in range(len(self.layers)-1, -1, -1):
             Z = self.layers[i].forwardT(Z)
 
         return Z
@@ -102,7 +105,7 @@ class DeepAutoEncoder(object):
 
 def main():
     Xtrain, Ytrain, Xtest, Ytest = getKaggleMNIST()
-    dae = DeepAutoEncoder([500, 300, 2])
+    dae = DeepAutoEncoder([500, 300, 2]) # 500 300 2 300 500
     dae.fit(Xtrain)
     mapping = dae.map2center(Xtrain)
     plt.scatter(mapping[:,0], mapping[:,1], c=Ytrain, s=100, alpha=0.5)
@@ -110,9 +113,9 @@ def main():
 
     # purity measure from unsupervised machine learning pt 1
     _, Rfull = gmm(X, 10, max_iter=30)
-    print "full purity:", purity(Y, Rfull)
+    print("full purity:", purity(Y, Rfull))
     _, Rreduced = plot_k_means(Z, 10, max_iter=30)
-    print "reduced purity:", purity(Y, Rreduced)
+    print("reduced purity:", purity(Y, Rreduced))
 
 
 if __name__ == '__main__':

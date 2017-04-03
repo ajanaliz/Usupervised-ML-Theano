@@ -4,13 +4,13 @@ import theano.tensor as T
 import matplotlib.pyplot as plt
 
 from sklearn.utils import shuffle
-from theano.tensor.shared_randomstreams import RandomStreams
+from theano.tensor.shared_randomstreams import RandomStreams # allows us to sample random variables
 from util import relu, error_rate, getKaggleMNIST, init_weights
 from autoencoder import DNN
 
 
 class RBM(object):
-    def __init__(self, M, an_id):
+    def __init__(self, M, an_id): # takes in number of hidden units M and the id of the RBM
         self.M = M
         self.id = an_id
         self.rng = RandomStreams()
@@ -26,7 +26,7 @@ class RBM(object):
         self.params = [self.W, self.c, self.b]
         self.forward_params = [self.W, self.c]
 
-        # we won't use this to fit the RBM but we will use these for backpropagation later
+        # we won't use this to fit the RBM(momentum isnt used in this RBM) but we will use these for backpropagation later
         # TODO: technically they should be reset before doing backprop
         self.dW = theano.shared(np.zeros(W0.shape), 'dW_%s' % self.id)
         self.dc = theano.shared(np.zeros(self.M), 'dbh_%s' % self.id)
@@ -34,8 +34,10 @@ class RBM(object):
         self.dparams = [self.dW, self.dc, self.db]
         self.forward_dparams = [self.dW, self.dc]
 
+        # define our input:
         X_in = T.matrix('X_%s' % self.id)
 
+        # define our hidden op which is used for our layer wise pretraining
         # attach it to the object so it can be used later
         # must be sigmoidal because the output is also a sigmoid
         H = T.nnet.sigmoid(X_in.dot(self.W) + self.c)
@@ -58,7 +60,8 @@ class RBM(object):
         H = self.sample_h_given_v(X_in)
         X_sample = self.sample_v_given_h(H)
 
-        # define the objective, updates, and train function
+        # define the objective which is free energy of visible 0 minus the free energy of visible 1, updates, and train function
+        # we're taking the mean since we're doing batch training
         objective = T.mean(self.free_energy(X_in)) - T.mean(self.free_energy(X_sample))
 
         # need to consider X_sample constant because you can't take the gradient of random numbers in Theano
@@ -69,15 +72,15 @@ class RBM(object):
         )
 
         costs = []
-        print "training rbm: %s" % self.id
-        for i in xrange(epochs):
-            print "epoch:", i
+        print("training rbm: %s" % self.id)
+        for i in range(epochs):
+            print("epoch:", i)
             X = shuffle(X)
-            for j in xrange(n_batches):
+            for j in range(n_batches):
                 batch = X[j*batch_sz:(j*batch_sz + batch_sz)]
                 train_op(batch)
                 the_cost = cost_op(X)  # technically we could also get the cost for Xtest here
-                print "j / n_batches:", j, "/", n_batches, "cost:", the_cost
+                print("j / n_batches:", j, "/", n_batches, "cost:", the_cost)
                 costs.append(the_cost)
         if show_fig:
             plt.plot(costs)
